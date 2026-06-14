@@ -7,6 +7,7 @@ ICML 2026.
 ## Install
 Install the conda environment via:
 ```
+cd CoRe
 conda env create -f conda_env.yaml
 conda activate core
 ```
@@ -28,8 +29,8 @@ export MY_API_KEY=your_api_key
 ```
 
 2. Configure the model and API endpoint in the source code:
-- **RRM (preference labeling)**: edit `model_type` and `base_url` in `RRM/preference_label.py` (default: `gemini-2.5-flash-lite`).
-- **FRM (reward code generation)**: edit `base_url` in `FRM/code_agent.py`, and `llm_model` in `FRM/reward_code.py` (default: `gpt-4.1-mini`).
+- **RRM (preference labeling)**: edit `model_type` in `RRM/preference_label.py` (default: `gemini-2.5-flash-lite`).
+- **FRM (reward code generation)**: edit `llm_model` in `FRM/reward_code.py` (default: `gpt-4.1-mini`).
 
 Both modules read the API key from the `MY_API_KEY` environment variable and use an OpenAI-compatible API interface.
 
@@ -47,8 +48,7 @@ bash run-soft.sh
 ```
 
 ## Acknowledgements
-- We thank the authors of [RL-VLM-F](https://github.com/yufeiwang63/RL-VLM-F) for open sourcing their code, which our codebase is built upon.
-- We thank the authors of [Eureka](https://github.com/eureka-research/eureka) for their work on LLM-based reward design, which inspired our FRM module.
+We thank the authors of [RL-VLM-F](https://github.com/yufeiwang63/RL-VLM-F) and [Eureka](https://github.com/eureka-research/eureka) for open sourcing their code, which our codebase is built upon.
 
 ## Citation
 If you find this codebase / paper useful in your research, please consider citing:
