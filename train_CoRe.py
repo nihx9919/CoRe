@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import numpy as np
-from FRM import FRM
 import torch
 import os
 import time
@@ -14,7 +13,7 @@ import cv2
 from omegaconf import OmegaConf
 import wandb
 import sys
-from FRM.reward_code import RewardCode
+from FRM.reward_code import FRMCode
 from collections import defaultdict
 from FRM.misc import file_to_string
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -151,10 +150,11 @@ class Workspace(object):
         # generate formal reward code
         sys.path.append(f"{self.work_dir}")
         sys.path.append(f"{PROJECT_DIR}/envs/env_info")
-        self.FRM_gen = RewardCode(cfg, PROJECT_DIR, self.work_dir, self.RRM, llm_model='gpt-4.1-mini', sample_num=4, once_sample_num=4)
+        sys.path.append(f"{PROJECT_DIR}/envs/frm_code")
+        self.FRM_gen = FRMCode(cfg, PROJECT_DIR, self.work_dir, self.RRM, llm_model='gpt-4.1-mini', sample_num=4, once_sample_num=4)
         
         self.use_FRM_online = cfg.use_FRM_online
-        # initialize the first FRM reward 
+        # initialize the first FRM 
         if self.use_FRM_online:
             self.FRM = self.FRM_gen.reward_gen()
             if self.FRM is None:
@@ -312,7 +312,7 @@ class Workspace(object):
                     episode_reward_dict = dict(episode_reward_dict)
                
                     # reward function update 
-                    if self.step <= self.cfg.num_rf_max_steps:
+                    if self.step <= self.cfg.FRM_align_max_steps:
                         # rf reward component logging for policy feedback
                         if len(self.FRM_gen.metric_dict) == 0:
                             if "metaworld" in self.cfg.env:
@@ -329,7 +329,7 @@ class Workspace(object):
                             for metric in episode_reward_dict.keys():
                                 self.FRM_gen.metric_dict[metric].append(round(episode_reward_dict[metric], 2))
 
-                        if self.step % self.cfg.num_rf_fre == 0:
+                        if self.step % self.cfg.FRM_align_step == 0:
                             # update reward function
                             eval_episode_freq = max(int(len(self.FRM_gen.metric_dict["socre"]) // 10), 1)
                             rf = self.FRM_gen.reward_func_gen(episode_freq=eval_episode_freq, cur_reward_func=self.FRM)
@@ -408,8 +408,6 @@ class Workspace(object):
                 
                 self.reward_alpha = self.cfg.reward_alpha
                 self.replay_buffer.reward_alpha = self.cfg.reward_alpha
-                print(f"set the rm_ alpha: {self.reward_alpha}")
-                print(f"set the rm_ alpha: {self.reward_alpha}")
                 print(f"set the rm_ alpha: {self.reward_alpha}")
                 # update schedule
                 if self.cfg.reward_schedule == 1:
@@ -573,7 +571,7 @@ class Workspace(object):
         self.agent.save(model_save_dir, self.step)
         self.RRM.save(model_save_dir, self.step)
             
-@hydra.main(config_path='config/train_PEBBLE.yaml', strict=True)
+@hydra.main(config_path='config/train_CoRe.yaml', strict=True)
 def main(cfg):
     workspace = Workspace(cfg)
     workspace.run()

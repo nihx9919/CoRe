@@ -13,7 +13,7 @@ from FRM.code_agent import Agent
 import os
 import re
 from scipy.interpolate import interp1d
-from RRM.prompt import goal_env_prompts
+from RRM.prompt import env_goal_prompts
 
 model_type = "gemini-2.5-flash-lite"
 base_url = "https://c-z0-api-01.hash070.com/v1"
@@ -121,7 +121,7 @@ class PreAgent(Agent):
         self.project_dir = project_dir
         self.env_name = env_name
         self.segment_size = segment_size
-        self.task_description = goal_env_prompts[env_name]
+        self.task_description = env_goal_prompts[env_name]
         self.init_rgb_image = np_to_base64_image(self.load_init_image())
         self.goal_rgb_image = np_to_base64_image(self.load_goal_image())
 

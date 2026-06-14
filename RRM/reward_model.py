@@ -15,8 +15,8 @@ import pickle as pkl
 import random
 import cv2
 import warnings
-from RRM.reward_model import PreAgent
-from conv_net import CNN, fanin_init
+from RRM.preference_label import PreAgent
+from RRM.conv_net import CNN, fanin_init
 
 device = 'cuda'
 

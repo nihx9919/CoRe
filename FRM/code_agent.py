@@ -1,3 +1,4 @@
+from typing import Optional
 from openai import OpenAI
 import base64
 import os
@@ -9,11 +10,11 @@ from FRM.file_process import file_to_string
 import json
 
 base_url = "https://c-z0-api-01.hash070.com/v1"
-api_key = os.environ['MY_API_KEY']
+api_key = os.environ['MYGPT_API_KEY']
 
 # for create a dialogue
 class Conversation():
-    def __init__(self,system_prompt:str | None) -> None:
+    def __init__(self, system_prompt: Optional[str]) -> None:
         if system_prompt is None:
             self.messages = []
         else:
