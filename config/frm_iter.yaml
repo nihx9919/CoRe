@@ -1,0 +1,28 @@
+defaults:
+    - agent: sac
+    - hydra/output: frm
+
+env: 
+num_train_steps: 1e6
+log_frequency: 10000
+
+# training 
+replay_buffer_capacity: ${num_train_steps}
+gradient_update: 1
+
+eval_frequency: 10000
+num_eval_episodes: 10
+
+# logger
+log_save_tb: true
+use_wandb: False
+
+iter: 0
+response: 0
+seed: 0
+
+# Basic setup
+device: cuda
+num_seed_steps: 1000
+work_dir_main: 
+save_model_step:
