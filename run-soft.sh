@@ -1,5 +1,5 @@
 for seed in 0 1 2; do
-python train_PEBBLE_rf.py \
+python train_CoRe.py \
     env=softgym_ClothFoldDiagonal agent=sac_cloth \
     seed=$seed \
     exp_name=vlm_video_tanh \
@@ -11,7 +11,7 @@ python train_PEBBLE_rf.py \
 done
 
 for seed in 0 1 2 ; do
-python train_PEBBLE_rf.py \
+python train_CoRe.py \
     env=softgym_RopeFlattenEasy \
     seed=$seed \
     exp_name=vlm_video_tanh \
@@ -24,7 +24,7 @@ done
 wait
 
 for seed in 0 1 2; do
-python train_PEBBLE_rf.py \
+python train_CoRe.py \
     env=softgym_PassWater \
     seed=$seed \
     exp_name=vlm_video \

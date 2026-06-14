@@ -1,6 +1,6 @@
 # for sweep
 for seed in 0 1 2; do
-    python train_PEBBLE_rf.py \
+    python train_CoRe.py \
         env=metaworld_sweep-into-v2 \
         seed=$seed \
         exp_name=project_demo \
@@ -20,7 +20,7 @@ done
 
 # for soccer
 for seed in 0 1 2; do
-    python train_PEBBLE_rf.py \
+    python train_CoRe.py \
         env=metaworld_soccer-v2 \
         seed=$seed \
         exp_name=vlm_video_0_5 \
@@ -40,7 +40,7 @@ done
 
 # for drawer open
 for seed in 0 1 2; do
-    python train_PEBBLE_rf.py \
+    python train_CoRe.py \
         env=metaworld_drawer-open-v2 \
         seed=$seed \
         exp_name=vlm_video_0_5 \
@@ -60,7 +60,7 @@ done
 
 # botton pres topdown
 for seed in 0 1 2; do
-    python train_PEBBLE_rf.py \
+    python train_CoRe.py \
         env=metaworld_button-press-topdown-v2 \
         seed=$seed \
         exp_name=vlm_video_0_5 \
@@ -79,7 +79,7 @@ for seed in 0 1 2; do
 done
 
 for seed in 0 1 2; do
-    python train_PEBBLE_rf.py \
+    python train_CoRe.py \
         env=metaworld_dial-turn-v2 \
         seed=$seed \
         exp_name=vlm_video_0_5 \
@@ -98,7 +98,7 @@ for seed in 0 1 2; do
 done
 
 for seed in 0 1 2; do
-    python train_PEBBLE_rf.py \
+    python train_CoRe.py \
         env=metaworld_hammer-v2 \
         seed=$seed \
         exp_name=vlm_video_0_5 \
@@ -117,7 +117,7 @@ for seed in 0 1 2; do
 done
 
 for seed in 0 1 2; do
-    python train_PEBBLE_rf.py \
+    python train_CoRe.py \
         env=metaworld_peg-insert-side-v2 \
         seed=$seed \
         exp_name=vlm_video_0_5 \
