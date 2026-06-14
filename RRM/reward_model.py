@@ -200,7 +200,7 @@ class RewardModel:
         if not os.path.exists(self.label_save_path):
             os.makedirs(self.label_save_path)
         else:
-            self.client = PreAgent(self.env_name, size_segment, use_cache = self.cached_label_path is not None, project_dir=self.dir_path)
+            self.client = PreAgent(self.env_name, size_segment, project_dir=self.dir_path)
        
         self.kl_weight = kl_weight 
 

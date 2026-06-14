@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
+import os
+import sys
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, PROJECT_DIR)
+
 import numpy as np
 import torch
-import os
 import time
 from logger import Logger
 from replay_buffer import ReplayBuffer
@@ -11,7 +15,6 @@ import hydra
 from omegaconf import OmegaConf
 from collections import defaultdict
 import importlib
-import sys
 import wandb
 FRM_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -52,7 +55,6 @@ class Workspace(object):
             self.env.action_space.shape,
             int(cfg.replay_buffer_capacity),
             cfg.device,
-            store_image=False,
             image_size=None)
 
         self.cfg = cfg
@@ -274,7 +276,7 @@ class Workspace(object):
                 self.agent.save(model_save_dir, self.step)
             
 
-@hydra.main(config_path='config/frm_iter.yaml', strict=True)
+@hydra.main(config_path='../config/frm_iter.yaml', strict=True)
 def main(cfg):
     
     workspace = Workspace(cfg)

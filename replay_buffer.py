@@ -22,8 +22,8 @@ class ReplayBuffer(object):
 
         self.not_dones = np.empty((capacity, 1), dtype=np.float32)
         self.not_dones_no_max = np.empty((capacity, 1), dtype=np.float32)
-
-        self.images = np.empty((capacity, image_size, image_size, 3), dtype=np.uint8)
+        if image_size:
+            self.images = np.empty((capacity, image_size, image_size, 3), dtype=np.uint8)
 
         self.idx = 0
         self.full = False

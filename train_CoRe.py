@@ -156,7 +156,7 @@ class Workspace(object):
         self.use_FRM_online = cfg.use_FRM_online
         # initialize the first FRM 
         if self.use_FRM_online:
-            self.FRM = self.FRM_gen.reward_gen()
+            self.FRM = self.FRM_gen.FRM_generate()
             if self.FRM is None:
                 raise ValueError("FRM initialization fail!")
         else:

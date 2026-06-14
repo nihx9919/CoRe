@@ -114,7 +114,7 @@ def save_render_videos(recorded_frames, output_dir, time_string, index, label):
 
 class PreAgent(Agent):
 
-    def __init__(self, env_name, segment_size, use_cache=False, project_dir='./'):
+    def __init__(self, env_name, segment_size, project_dir='./'):
         super().__init__(None, model_type, temperature=0)
 
         self.project_dir = project_dir
