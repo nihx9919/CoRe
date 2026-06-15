@@ -73,7 +73,7 @@ class Workspace(object):
             image_size=image_height, 
             reward_alpha=self.reward_alpha)
 
-        # instantiating the reward model
+        # instantiating the RRM
         self.RRM = RewardModel(
             ### original PEBBLE parameters
             self.env.observation_space.shape[0],
@@ -81,8 +81,8 @@ class Workspace(object):
             ensemble_size=cfg.ensemble_size,
             size_segment=cfg.segment,
             activation=cfg.activation, 
-            lr=cfg.reward_lr,
-            mb_size=cfg.reward_batch, 
+            lr=cfg.RRM_lr,
+            mb_size=cfg.RRM_batch, 
             large_batch=cfg.large_batch, 
             label_margin=cfg.label_margin, 
             teacher_beta=cfg.teacher_beta, 
@@ -97,7 +97,7 @@ class Workspace(object):
             log_dir=self.work_dir,
             cached_label_path=cfg.cached_label_path,
 
-            ### image-based reward model parameters
+            ### RRM parameters
             image_height=image_height,
             image_width=image_width,
             resize_factor=self.resize_factor,
@@ -147,7 +147,7 @@ class Workspace(object):
         os.system("cp {}/RRM/prompt.py {}/".format(current_file_path, self.work_dir))
         OmegaConf.save(config=self.cfg, f=f'{self.work_dir}/cfg.yaml')
 
-        # generate formal reward code
+        # generate FRM
         sys.path.append(f"{self.work_dir}")
         sys.path.append(f"{PROJECT_DIR}/envs/env_info")
         sys.path.append(f"{PROJECT_DIR}/envs/frm_code")
@@ -160,12 +160,12 @@ class Workspace(object):
             if self.FRM is None:
                 raise ValueError("FRM initialization fail!")
         else:
-            # load FRM reward from local file
-            FRM_reward_file = f"{self.cfg.env.replace('-', '_').lower()}_frm"
-            self.FRM = self.FRM_gen.dynamic_import_frm(FRM_reward_file)
-            self.FRM_gen.best_reward_response = file_to_string(f"{PROJECT_DIR}/envs/frm_code/{self.cfg.env.replace('-', '_').lower()}_frm.py")
+            # load FRM from local file
+            FRM_file = f"{self.cfg.env.replace('-', '_').lower()}_frm"
+            self.FRM = self.FRM_gen.dynamic_import_frm(FRM_file)
+            self.FRM_gen.best_frm_response = file_to_string(f"{PROJECT_DIR}/envs/frm_code/{self.cfg.env.replace('-', '_').lower()}_frm.py")
         
-        # empty preference dataset in RAM after reward model stop update
+        # empty preference dataset in RAM after RRM stop update
         self.empty_pre_dataset = True
 
 
@@ -241,7 +241,7 @@ class Workspace(object):
 
         self.logger.dump(self.step, ty='eval')
     
-    def learn_reward(self, first_flag=0):
+    def learn_RRM(self, first_flag=0):
         # get feedbacks
         query_label_timer = time.time()
         labeled_queries = self.RRM.uniform_sampling()
@@ -251,10 +251,10 @@ class Workspace(object):
         self.logger.log('train_time/query_label', time.time() - query_label_timer, self.step)
 
         total_acc = 0
-        reward_learning_timer = time.time()
+        RRM_learning_timer = time.time()
         if self.labeled_feedback > 0:
-            # update reward
-            for _ in range(self.cfg.reward_update):
+            # update RRM
+            for _ in range(self.cfg.RRM_update):
                 if self.cfg.label_margin > 0 or self.cfg.teacher_eps_equal > 0:
                     raise NotImplementedError
                 else:
@@ -264,12 +264,12 @@ class Workspace(object):
                 
                 if total_acc > 0.97:
                     break
-        self.logger.log('train_time/reward_learning', time.time() - reward_learning_timer, self.step)
-        print(f"Reward function is updated! ACC: {total_acc:.3f} Queried/Total: {self.labeled_feedback}/{self.total_feedback}")
-        print(f'Reward learning time: {time.time() - reward_learning_timer}')
+        self.logger.log('train_time/RRM_learning', time.time() - RRM_learning_timer, self.step)
+        print(f"RRM is updated! ACC: {total_acc:.3f} Queried/Total: {self.labeled_feedback}/{self.total_feedback}")
+        print(f'RRM learning time: {time.time() - RRM_learning_timer}')
         return total_acc, self.RRM.vlm_label_acc
 
-    def relabel_with_reward_model(self):
+    def relabel_with_RRM(self):
         self.RRM.eval()
         self.replay_buffer.relabel_with_predictor(self.RRM, self.step)
         self.RRM.train()
@@ -295,7 +295,7 @@ class Workspace(object):
             self.my_wandb.log({f"{self.cfg.env}": 0}, step=0)
 
         interact_count = 0
-        reward_learning_acc = 0
+        RRM_learning_acc = 0
         vlm_acc = 0
         while self.step <= self.cfg.num_train_steps:
             if done:
@@ -304,16 +304,16 @@ class Workspace(object):
                     self.logger.log('train_time/duration', time.time() - start_time, self.step)
                     start_time = time.time()
 
-                    # logging for frm reward component
+                    # logging for frm component
                     episode_reward_dict = defaultdict(float)
                     for d in step_frm_dict:
                         for key, value in d.items():
                             episode_reward_dict[key] += value
                     episode_reward_dict = dict(episode_reward_dict)
                
-                    # reward function update 
+                    # FRM
                     if self.step <= self.cfg.FRM_align_max_steps:
-                        # rf reward component logging for policy feedback
+                        # FRM component logging for policy feedback
                         if len(self.FRM_gen.metric_dict) == 0:
                             if "metaworld" in self.cfg.env:
                                 self.FRM_gen.metric_dict["socre"] = [round(episode_success, 2)]
@@ -330,11 +330,11 @@ class Workspace(object):
                                 self.FRM_gen.metric_dict[metric].append(round(episode_reward_dict[metric], 2))
 
                         if self.step % self.cfg.FRM_align_step == 0:
-                            # update reward function
+                            # update FRM
                             eval_episode_freq = max(int(len(self.FRM_gen.metric_dict["socre"]) // 10), 1)
-                            rf = self.FRM_gen.reward_func_gen(episode_freq=eval_episode_freq, cur_reward_func=self.FRM)
+                            rf = self.FRM_gen.FRM_generate(episode_freq=eval_episode_freq, cur_frm=self.FRM)
                             if rf is not None:
-                                # if improved, update the reward function
+                                # if improved, update the FRM
                                 self.FRM = rf
                                 # relabel
                                 if "metaworld" in self.cfg.env:
@@ -345,15 +345,15 @@ class Workspace(object):
                                     self.replay_buffer.relabel_with_rf(self.FRM, None, self.step)
                                 else:
                                     raise ValueError
-                                print("Relabel with new reward function successful!")
+                                print("Relabel with new FRM successful!")
                             else:
-                                print("Using the last iter reward function! ")
+                                print("Using the last FRM! ")
 
                     self.logger.log('train_time/query_label', 0, self.step)
-                    self.logger.log('train_time/reward_learning', 0, self.step)
+                    self.logger.log('train_time/RRM_learning', 0, self.step)
                     self.logger.log('train_time/relabel', 0, self.step)
 
-                    self.logger.log('train/reward_learning_acc', reward_learning_acc, self.step)
+                    self.logger.log('train/RRM_learning_acc', RRM_learning_acc, self.step)
                     self.logger.log('train/vlm_acc', vlm_acc, self.step)
                     self.logger.dump(self.step, save=(self.step > self.cfg.num_seed_steps+1), ty='train')
                     if "Cloth" in self.cfg.env:
@@ -410,28 +410,28 @@ class Workspace(object):
                 self.replay_buffer.reward_alpha = self.cfg.reward_alpha
                 print(f"set the rm_ alpha: {self.reward_alpha}")
                 # update schedule
-                if self.cfg.reward_schedule == 1:
+                if self.cfg.RRM_schedule == 1:
                     frac = (self.cfg.num_train_steps-self.step) / self.cfg.num_train_steps
                     if frac == 0:
                         frac = 0.01
-                elif self.cfg.reward_schedule == 2:
+                elif self.cfg.RRM_schedule == 2:
                     frac = self.cfg.num_train_steps / (self.cfg.num_train_steps-self.step +1)
                 else:
                     frac = 1
                 self.RRM.change_batch(frac)
                 
                 # update margin --> not necessary / will be updated soon
-                new_margin = np.mean(avg_train_true_return) * (self.cfg.segment / self.env._max_episode_steps) # an average segment reward
+                new_margin = np.mean(avg_train_true_return) * (self.cfg.segment / self.env._max_episode_steps)
                 self.RRM.set_teacher_thres_skip(new_margin)
                 self.RRM.set_teacher_thres_equal(new_margin)
                 
-                # first learn reward
-                reward_learning_acc, vlm_acc = self.learn_reward(first_flag=1)
+                # first learn RRM
+                RRM_learning_acc, vlm_acc = self.learn_RRM(first_flag=1)
                 
                 # relabel buffer
-                self.relabel_with_reward_model()
+                self.relabel_with_RRM()
                 
-                # reset Q to reward_model + reward_function
+                # reset Q to FRM + RRM
                 print("Reset ACTOR AND CRITIC")
                 self.agent.reset_critic()
                 # update agent
@@ -443,15 +443,15 @@ class Workspace(object):
                 # reset interact_count
                 interact_count = 0
             elif self.step > self.cfg.num_seed_steps + self.cfg.num_pre_steps:
-                # update reward function
+                # update rRRM
                 if self.total_feedback < self.cfg.max_feedback:
                     if interact_count == self.cfg.num_interact:
                         # update schedule
-                        if self.cfg.reward_schedule == 1:
+                        if self.cfg.RRM_schedule == 1:
                             frac = (self.cfg.num_train_steps-self.step) / self.cfg.num_train_steps
                             if frac == 0:
                                 frac = 0.01
-                        elif self.cfg.reward_schedule == 2:
+                        elif self.cfg.RRM_schedule == 2:
                             frac = self.cfg.num_train_steps / (self.cfg.num_train_steps-self.step +1)
                         else:
                             frac = 1
@@ -466,11 +466,11 @@ class Workspace(object):
                         if self.RRM.mb_size + self.total_feedback > self.cfg.max_feedback:
                             self.RRM.set_batch(self.cfg.max_feedback - self.total_feedback)
                             
-                        reward_learning_acc, vlm_acc = self.learn_reward()
+                        RRM_learning_acc, vlm_acc = self.learn_RRM()
 
                         relabel_timer = time.time()
                         # relabel buffer
-                        self.relabel_with_reward_model()
+                        self.relabel_with_RRM()
 
                         self.logger.log('train_time/relabel', time.time() - relabel_timer, self.step)
                         print(f"Relabel time: {time.time() - relabel_timer}")
@@ -500,9 +500,8 @@ class Workspace(object):
             if 'Water' not in self.cfg.env and 'Rope' not in self.cfg.env:
                 rgb_image = cv2.resize(rgb_image, (self.image_height, self.image_width)) # NOTE: resize image here
 
-            # compute reward
             if self.step < (self.cfg.num_seed_steps + self.cfg.num_pre_steps):
-                    # Don not use reward model when no first reward learning
+                    # not use RRM when first RRM learning
                     reward_rrm = 0
             else:
                 image = rgb_image.transpose(2, 0, 1).astype(np.float32) / 255.0
@@ -512,7 +511,7 @@ class Workspace(object):
                 reward_rrm = self.RRM.r_hat(image)
                 self.RRM.train()
 
-            # compute reward function reward
+            # compute CoRe reward
             if "metaworld" in self.cfg.env:
                 reward_frm, step_frm_info = self.FRM(next_obs, action, self.env.target_pos_frm)
             elif "softgym_PassWater" in self.cfg.env:
@@ -553,7 +552,7 @@ class Workspace(object):
             if self.log_success:
                 episode_success = max(episode_success, extra['success'])
                 
-            # adding data to the reward training data
+            # adding data
             self.replay_buffer.add(obs, action, reward_hat, reward_frm, reward_rrm, 
                 next_obs, done, done_no_max, image=rgb_image[::self.resize_factor, ::self.resize_factor, :])
 

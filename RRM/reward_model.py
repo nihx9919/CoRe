@@ -78,7 +78,7 @@ class RewardModel:
                 env_name="CartPole-v1",
                 log_dir=None,
 
-                # image based reward
+                # RRM parameter
                 image_height=128,
                 image_width=128,
                 resize_factor=1,
@@ -121,9 +121,7 @@ class RewardModel:
         self.de = ensemble_size
         self.lr = lr
         self.activation = activation
-        # not image-based model
-        self.reward_model_layers = 3
-        self.reward_model_H = 256
+
         # image-based model
         self.resnet = resnet
         self.conv_kernel_sizes = conv_kernel_sizes
@@ -199,8 +197,7 @@ class RewardModel:
         self.label_save_path = os.path.join(self.logdir, f"vlm_label_set")
         if not os.path.exists(self.label_save_path):
             os.makedirs(self.label_save_path)
-        else:
-            self.client = PreAgent(self.env_name, size_segment, project_dir=self.dir_path)
+        self.client = PreAgent(self.env_name, size_segment, project_dir=self.dir_path)
        
         self.kl_weight = kl_weight 
 

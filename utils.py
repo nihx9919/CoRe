@@ -16,8 +16,8 @@ from skimage.util.shape import view_as_windows
 from torch import nn
 from torch import distributions as pyd
 import cv2
-from softgym.registered_env import env_arg_dict, SOFTGYM_ENVS
-from softgym.utils.normalized_env import normalize
+# from softgym.registered_env import env_arg_dict, SOFTGYM_ENVS
+# from softgym.utils.normalized_env import normalize
     
 def make_softgym_env(cfg):
     env_name = cfg.env.replace('softgym_','')

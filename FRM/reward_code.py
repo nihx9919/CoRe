@@ -25,11 +25,11 @@ task_description_prompts = {
 
 
 class FRMCode:
-    def __init__(self, cfg, project_dir, work_dir, reward_model, sample_num=4, once_sample_num=4, llm_model='gpt-4.1-mini'):
+    def __init__(self, cfg, project_dir, work_dir, RRM_reward, sample_num=4, once_sample_num=4, llm_model='gpt-4.1-mini'):
         self.cfg = cfg
         self.project_dir = project_dir
         self.work_dir = work_dir
-        self.reward_model = reward_model
+        self.RRM_reward = RRM_reward
         if "metaworld" in cfg.env:
             task_mujoco_code_path = f'{project_dir}/metaworld/envs/mujoco/sawyer_xyz/v2/{self.cfg.env.replace("metaworld", "sawyer").replace("-", "_").lower()}.py'
             if "sweep" in self.cfg.env:
@@ -372,10 +372,10 @@ class FRMCode:
         return acc
 
     def set_preference_data(self):
-        label_gt = self.reward_model.buffer_label[:self.reward_model.buffer_index, :].squeeze()
-        s_1 = self.reward_model.buffer_rf1[:self.reward_model.buffer_index, :, :self.reward_model.ds]
-        a_1 = self.reward_model.buffer_rf1[:self.reward_model.buffer_index, :, self.reward_model.ds:]
-        s_2 = self.reward_model.buffer_rf2[:self.reward_model.buffer_index, :, :self.reward_model.ds]
-        a_2 = self.reward_model.buffer_rf2[:self.reward_model.buffer_index, :, self.reward_model.ds:]
+        label_gt = self.RRM_reward.buffer_label[:self.RRM_reward.buffer_index, :].squeeze()
+        s_1 = self.RRM_reward.buffer_frm1[:self.RRM_reward.buffer_index, :, :self.RRM_reward.ds]
+        a_1 = self.RRM_reward.buffer_frm1[:self.RRM_reward.buffer_index, :, self.RRM_reward.ds:]
+        s_2 = self.RRM_reward.buffer_frm2[:self.RRM_reward.buffer_index, :, :self.RRM_reward.ds]
+        a_2 = self.RRM_reward.buffer_frm2[:self.RRM_reward.buffer_index, :, self.RRM_reward.ds:]
 
         return s_1, a_1, s_2, a_2, label_gt

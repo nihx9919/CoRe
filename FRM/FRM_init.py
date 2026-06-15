@@ -187,7 +187,7 @@ class Workspace(object):
                     self.logger.log('train/duration', time.time() - start_time, self.step)
                     start_time = time.time()
 
-                    # frm reward component logging
+                    # frm component logging
                     frm_reward_dict = defaultdict(float)
                     for d in frm_reward_hat_dict:
                         for key, value in d.items():

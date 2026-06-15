@@ -17,8 +17,8 @@ class ReplayBuffer(object):
         self.actions = np.empty((capacity, *action_shape), dtype=np.float32)
 
         self.rewards = np.empty((capacity, 1), dtype=np.float32)
-        self.rewards_rf = np.empty((capacity, 1), np.float32)
-        self.rewards_rm = np.empty((capacity, 1), np.float32)
+        self.rewards_frm = np.empty((capacity, 1), np.float32)
+        self.rewards_rrm = np.empty((capacity, 1), np.float32)
 
         self.not_dones = np.empty((capacity, 1), dtype=np.float32)
         self.not_dones_no_max = np.empty((capacity, 1), dtype=np.float32)
@@ -31,14 +31,14 @@ class ReplayBuffer(object):
     def __len__(self):
         return self.capacity if self.full else self.idx
 
-    def add(self, obs, action, reward, reward_rf, reward_rm, 
+    def add(self, obs, action, reward, reward_frm, reward_rrm, 
             next_obs, done, done_no_max, image=None):
         np.copyto(self.obses[self.idx], obs)
         np.copyto(self.actions[self.idx], action)
 
         np.copyto(self.rewards[self.idx], reward)
-        np.copyto(self.rewards_rf[self.idx], reward_rf)
-        np.copyto(self.rewards_rm[self.idx], reward_rm)
+        np.copyto(self.rewards_frm[self.idx], reward_frm)
+        np.copyto(self.rewards_rrm[self.idx], reward_rrm)
 
         np.copyto(self.next_obses[self.idx], next_obs)
         np.copyto(self.not_dones[self.idx], not done)
@@ -61,21 +61,20 @@ class ReplayBuffer(object):
             if last_index > relabel_max_idx:
                 last_index = relabel_max_idx
             
-            # image-based reward
             inputs = self.images[start_index:last_index]
             inputs = np.transpose(inputs, (0, 3, 1, 2))
             inputs = inputs.astype(np.float32) / 255.0
 
             pred_reward = predictor.r_hat_batch(inputs)
-            self.rewards_rm[start_index:last_index] = pred_reward
-            self.rewards[start_index:last_index] = (1.0 - self.reward_alpha) * self.rewards_rf[start_index:last_index] + self.reward_alpha * self.rewards_rm[start_index:last_index]
+            self.rewards_rrm[start_index:last_index] = pred_reward
+            self.rewards[start_index:last_index] = (1.0 - self.reward_alpha) * self.rewards_frm[start_index:last_index] + self.reward_alpha * self.rewards_rrm[start_index:last_index]
         torch.cuda.empty_cache()
     
-    def relabel_with_rf(self, reward_func, target_pos, step):
+    def relabel_with_rf(self, frm, target_pos, step):
         relabel_max_idx = self.idx if not self.full else self.capacity
         for idx in range(relabel_max_idx):
-            self.rewards_rf[idx], _ = reward_func(self.obses[idx], self.actions[idx], target_pos)
-            self.rewards[idx] = (1.0 - self.reward_alpha) * self.rewards_rf[idx] + self.reward_alpha * self.rewards_rm[idx]
+            self.rewards_frm[idx], _ = frm(self.obses[idx], self.actions[idx], target_pos)
+            self.rewards[idx] = (1.0 - self.reward_alpha) * self.rewards_frm[idx] + self.reward_alpha * self.rewards_rrm[idx]
     
     def sample(self, batch_size):
         idxs = np.random.randint(0,
