@@ -3,7 +3,7 @@ for seed in 0 1 2; do
     python train_CoRe.py \
         env=metaworld_sweep-into-v2 \
         seed=$seed \
-        exp_name=core \
+        experiment=core \
         segment=20 \
         RRM_batch=20 \
         max_feedback=500 \
@@ -21,7 +21,7 @@ for seed in 0 1 2; do
     python train_CoRe.py \
         env=metaworld_soccer-v2 \
         seed=$seed \
-        exp_name=core \
+        experiment=core \
         segment=20 \
         RRM_batch=20 \
         max_feedback=500 \
@@ -39,7 +39,7 @@ for seed in 0 1 2; do
     python train_CoRe.py \
         env=metaworld_drawer-open-v2 \
         seed=$seed \
-        exp_name=core \
+        experiment=core \
         segment=20 \
         RRM_batch=20 \
         max_feedback=500 \
@@ -57,7 +57,7 @@ for seed in 0 1 2; do
     python train_CoRe.py \
         env=metaworld_button-press-topdown-v2 \
         seed=$seed \
-        exp_name=core \
+        experiment=core \
         segment=20 \
         RRM_batch=20 \
         max_feedback=500 \
@@ -74,7 +74,7 @@ for seed in 0 1 2; do
     python train_CoRe.py \
         env=metaworld_dial-turn-v2 \
         seed=$seed \
-        exp_name=core \
+        experiment=core \
         segment=20 \
         RRM_batch=20 \
         max_feedback=500 \
@@ -91,7 +91,7 @@ for seed in 0 1 2; do
     python train_CoRe.py \
         env=metaworld_hammer-v2 \
         seed=$seed \
-        exp_name=core \
+        experiment=core \
         segment=20 \
         RRM_batch=20 \
         max_feedback=500 \
@@ -108,7 +108,7 @@ for seed in 0 1 2; do
     python train_CoRe.py \
         env=metaworld_peg-insert-side-v2 \
         seed=$seed \
-        exp_name=core \
+        experiment=core \
         segment=20 \
         RRM_batch=20 \
         max_feedback=500 \
