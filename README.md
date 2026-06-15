@@ -7,6 +7,7 @@ ICML 2026.
 ## Install
 Install the conda environment via:
 ```
+git clone https://github.com/nihx9919/CoRe.git
 cd CoRe
 conda env create -f conda_env.yaml
 conda activate core
