@@ -9,8 +9,7 @@ import logging
 from FRM.file_process import file_to_string
 import json
 
-base_url = "https://c-z0-api-01.hash070.com/v1"
-api_key = os.environ['MYGPT_API_KEY']
+api_key = os.environ['MY_API_KEY']
 
 # for create a dialogue
 class Conversation():
@@ -96,7 +95,6 @@ class Agent():
         
         self.client = OpenAI(
             api_key=api_key,
-            base_url=base_url
             )
         self.model_type = model_type
         print(f"Using LLM: {model_type}")

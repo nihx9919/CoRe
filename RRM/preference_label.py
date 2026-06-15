@@ -16,8 +16,7 @@ from scipy.interpolate import interp1d
 from RRM.prompt import env_goal_prompts
 
 model_type = "gemini-2.5-flash-lite"
-base_url = "https://c-z0-api-01.hash070.com/v1"
-api_key = os.environ['MYGPT_API_KEY']
+api_key = os.environ['MY_API_KEY']
 
 def get_n_indices(length, k):
     return [int(round(i)) for i in np.linspace(0, length - 1, k)]
@@ -128,7 +127,6 @@ class PreAgent(Agent):
     def recreate_client(self):
         return OpenAI(
             api_key=api_key,
-            base_url=base_url
         )
     
     def load_goal_image(self):
